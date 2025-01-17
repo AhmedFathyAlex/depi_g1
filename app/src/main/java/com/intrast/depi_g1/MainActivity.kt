@@ -6,47 +6,43 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.intrast.depi_g1.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
-    var teamAScore = 0
-    var teamBScore = 0
-    val TAG = "MainActivity"
+    lateinit var viewModel: ScoreViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setContentView(binding.root)
+        viewModel = ViewModelProvider(this).get(ScoreViewModel::class.java)
+        binding.viewModel = viewModel
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        binding.teamAScore.text = teamAScore.toString() //set start score for team A
-        binding.teamBScore.text = teamBScore.toString() //set start score for team A
 
-        binding.increaseTeamAScore.setOnClickListener {
-            teamAScore++
-            binding.teamAScore.text = teamAScore.toString()
+//        Create observer to update team A score on screen:
+        val scoreA_Observer = Observer<Int> { newValue ->
+            binding.teamAScore.text = newValue.toString()
         }
 
-        binding.decreaseTeamAScore.setOnClickListener {
-            teamAScore--
-            binding.teamAScore.text = teamAScore.toString()
+        viewModel.scoreA.observe(this, scoreA_Observer)
 
+        val scoreB_Observer = Observer<Int> { newValue ->
+            binding.teamBScore.text = newValue.toString()
         }
 
-        binding.increaseTeamBScore.setOnClickListener {
-            teamBScore++
-            binding.teamBScore.text = teamBScore.toString()
+        viewModel.scoreB.observe(this, scoreB_Observer)
 
-        }
 
-        binding.decreaseTeamBScore.setOnClickListener {
-            teamBScore--
-            binding.teamBScore.text = teamBScore.toString()
-        }
 
     }
 }
